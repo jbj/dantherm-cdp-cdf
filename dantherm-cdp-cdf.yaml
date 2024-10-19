@@ -1,0 +1,490 @@
+substitutions:
+  dantherm_ctrl_id: dantherm_cdp_modbus_ctrl
+  # Override these with `substitutions` in the caller as necessary
+  dantherm_baud_rate: "115200"
+  dantherm_address: "1"
+  dantherm_parity: NONE
+
+uart:
+  id: ${dantherm_uart_id}
+  baud_rate: ${dantherm_baud_rate}
+  parity: ${dantherm_parity}
+  stop_bits: 1
+
+modbus:
+  id: dantherm_modbus
+  uart_id: ${dantherm_uart_id}
+
+modbus_controller:
+- id: ${dantherm_ctrl_id}
+  address: ${dantherm_address}
+  modbus_id: dantherm_modbus
+  setup_priority: -10
+  update_interval: 10s
+
+# Dantherm CDP/CDP-T/CDF 40-50-70
+#
+# The documentation for this Modbus interface can be found on the
+# Dantherm web site in the document titled "Modbus RTU Interface
+# for CDP/ CDP-T/ CDF 40-50-70". URL:
+# https://danthermpublicfiles.blob.core.windows.net/en-dantherm-manuals/Dantherm-CDP-CDP-T-CDF-40-50-70-modbus-protocol-instruction-051843-EN.pdf
+# Beware that as of rev. 1.1 of that document, all the addresses
+# documented are 1 too high.
+
+# R-only binary registers
+binary_sensor:
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  name: Compressor running
+  id: Comp_state
+  icon: mdi:engine-outline
+  register_type: holding
+  address: 1001
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  name: Fan running
+  id: Fan_state
+  icon: mdi:fan
+  register_type: holding
+  address: 1002
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  name: Solenoid valve open
+  id: Sole_state
+  icon: mdi:valve-open
+  register_type: holding
+  entity_category: diagnostic
+  address: 1003
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  name: Exhaust fan running
+  id: ExFan_state
+  icon: mdi:fan-chevron-up
+  register_type: holding
+  address: 1004
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  name: Heater 1 on
+  id: Heat1_state
+  icon: mdi:radiator
+  register_type: holding
+  address: 1005
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  name: Heater 2 on
+  id: Heat2_state
+  icon: mdi:radiator
+  register_type: holding
+  address: 1006
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  name: Unit is running
+  id: Alarm1_state
+  icon: mdi:play-box-outline
+  register_type: holding
+  entity_category: diagnostic
+  address: 1007
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  name: Unit has an alarm
+  id: Alarm2_state
+  icon: mdi:alarm-light-outline
+  register_type: holding
+  entity_category: diagnostic
+  address: 1008
+
+# address sequence gap
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  name: Failed to start
+  id: Fail_start
+  icon: mdi:alert-octagon-outline
+  register_type: holding
+  entity_category: diagnostic
+  address: 1018
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  name: Stand-by mode active
+  id: SB_mode
+  icon: mdi:power-standby
+  register_type: holding
+  entity_category: diagnostic
+  address: 1019
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  name: Unit is dehumidifying
+  id: DEH_mode
+  icon: mdi:cog-play-outline
+  register_type: holding
+  address: 1020
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  name: Unit is de-icing
+  id: Ice_mode
+  icon: mdi:snowflake-melt
+  register_type: holding
+  address: 1021
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  name: Unit has a LP fail
+  id: LP_mode
+  icon: mdi:gauge-empty
+  register_type: holding
+  entity_category: diagnostic
+  address: 1022
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  name: Unit has a sensor failure
+  id: Sens_mode
+  icon: mdi:eye-off-outline
+  register_type: holding
+  entity_category: diagnostic
+  address: 1023
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  name: Unit has a HP fail
+  id: HP_mode
+  icon: mdi:gauge-full
+  register_type: holding
+  entity_category: diagnostic
+  address: 1024
+
+# address sequence gap
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  name: Ambient fail mode active
+  id: Amb_mode
+  icon: mdi:weather-sunny-alert
+  register_type: holding
+  entity_category: diagnostic
+  address: 1029
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  name: Ambient temperature out of operating range
+  id: AmbT_mode
+  icon: mdi:thermometer-alert
+  register_type: holding
+  entity_category: diagnostic
+  address: 1030
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  name: Ambient humidity out of operating range
+  id: AmbRH_mode
+  icon: mdi:water-alert-outline
+  register_type: holding
+  entity_category: diagnostic
+  address: 1031
+
+
+
+sensor:
+
+# Duty time for binary sensors
+
+- platform: duty_time
+  sensor: Comp_state
+  id: Comp_state_time
+  name: Compressor running time
+  state_class: total_increasing
+
+- platform: duty_time
+  sensor: Fan_state
+  id: Fan_state_time
+  name: Fan running time
+  state_class: total_increasing
+
+- platform: duty_time
+  sensor: Sole_state
+  id: Sole_state_time
+  name: Solenoid valve open time
+  state_class: total_increasing
+
+- platform: duty_time
+  sensor: ExFan_state
+  id: ExFan_state_time
+  name: Exhaust fan running time
+  state_class: total_increasing
+
+- platform: duty_time
+  sensor: Heat1_state
+  id: Heat1_state_time
+  name: Heater 1 on time
+  state_class: total_increasing
+
+- platform: duty_time
+  sensor: Heat2_state
+  id: Heat2_state_time
+  name: Heater 2 on time
+  state_class: total_increasing
+
+- platform: duty_time
+  sensor: DEH_mode
+  id: DEH_mode_time
+  name: Dehumidifying time
+  state_class: total_increasing
+
+- platform: duty_time
+  sensor: Ice_mode
+  id: Ice_mode_time
+  name: De-icing time
+  state_class: total_increasing
+
+
+# R-only numeric registers
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  name: Evaporator 1 temperature
+  id: Evap_temp1
+  icon: mdi:snowflake-thermometer
+  register_type: holding
+  address: 1009
+  value_type: S_WORD
+  device_class: temperature
+  state_class: measurement
+  unit_of_measurement: "°C"
+  accuracy_decimals: 1
+  filters: &temperature_filters
+    - clamp:
+        min_value: -399
+        max_value: 1000
+        ignore_out_of_range: true
+    - multiply: 0.1
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  name: Evaporator 2 temperature
+  id: Evap_temp2
+  icon: mdi:snowflake-thermometer
+  register_type: holding
+  address: 1010
+  value_type: S_WORD
+  device_class: temperature
+  state_class: measurement
+  unit_of_measurement: "°C"
+  accuracy_decimals: 1
+  filters: *temperature_filters
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  name: Condenser temperature
+  id: Cond_temp1
+  icon: mdi:sun-thermometer-outline
+  register_type: holding
+  address: 1011
+  value_type: S_WORD
+  device_class: temperature
+  state_class: measurement
+  unit_of_measurement: "°C"
+  accuracy_decimals: 1
+  filters: *temperature_filters
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  name: Auxiliary sensor temperature
+  id: Aux_temp
+  icon: mdi:thermometer-plus
+  register_type: holding
+  address: 1012
+  value_type: S_WORD
+  device_class: temperature
+  state_class: measurement
+  unit_of_measurement: "°C"
+  accuracy_decimals: 1
+  filters: *temperature_filters
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  name: Ambient temperature
+  id: Amb_temp
+  icon: mdi:home-thermometer-outline
+  register_type: holding
+  address: 1013
+  value_type: S_WORD
+  device_class: temperature
+  state_class: measurement
+  unit_of_measurement: "°C"
+  accuracy_decimals: 1
+  filters: *temperature_filters
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  name: Ambient humidity
+  id: Amb_hum
+  icon: mdi:cloud-percent-outline
+  register_type: holding
+  address: 1014
+  value_type: S_WORD
+  device_class: humidity
+  state_class: measurement
+  unit_of_measurement: "%"
+  accuracy_decimals: 1
+  filters:
+    - multiply: 0.1
+
+
+# RW registers
+number:
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  id: RH_set
+  name: Setpoint value of desired humidity
+  icon: mdi:label-percent-outline
+  address: 1015
+  value_type: S_WORD
+  entity_category: config
+  unit_of_measurement: "%"
+  min_value: 40
+  max_value: 95
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  id: RH_Fan
+  name: Setpoint value of humidity for exhaust fan start
+  icon: mdi:label-percent
+  address: 1016
+  value_type: S_WORD
+  entity_category: config
+  unit_of_measurement: "%"
+  min_value: 40
+  max_value: 95
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  id: Temp_set
+  name: Setpoint value of desired temperature
+  icon: mdi:thermometer-check
+  address: 1017
+  value_type: S_WORD
+  entity_category: config
+  unit_of_measurement: "°C"
+  min_value: 0
+  max_value: 36
+
+# address sequence gap
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  id: HP_Alarm_Temp
+  name: HP Alarm max condenser temperature
+  icon: mdi:thermometer-high
+  address: 1035
+  value_type: S_WORD
+  entity_category: config
+  unit_of_measurement: "°C"
+  min_value: 0
+  max_value: 99
+
+# address sequence gap
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  id: Time_wait_fan
+  name: Time to wait until FAN will be started in standby mode, if enabled
+  icon: mdi:fan-clock
+  address: 1037
+  value_type: S_WORD
+  entity_category: config
+  unit_of_measurement: "s"
+  min_value: 60
+  max_value: 7200
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  id: Time_run_fan
+  name: Time to run FAN in standby mode, if enabled
+  icon: mdi:fan-off
+  address: 1038
+  value_type: S_WORD
+  entity_category: config
+  unit_of_measurement: "s"
+  min_value: 15
+  max_value: 600
+
+# address sequence gap
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  id: Service_int
+  name: Service interval value in weeks
+  icon: mdi:wrench-clock-outline
+  address: 1041
+  value_type: S_WORD
+  entity_category: config
+  unit_of_measurement: "w"
+  min_value: 0
+  max_value: 99
+
+# Finally, register 1042 is the modbus slave id, but that seems dangerous
+# to expose as read-write here, and it seems pointless to expose as
+# read-only.
+
+switch:
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  id: Fan_function
+  name: Standby fan function
+  icon: mdi:fan-plus
+  register_type: holding
+  address: 1036
+  bitmask: 1
+
+# address sequence gap
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  id: RH_Fen
+  name: Exhaust fan function
+  icon: mdi:fan-plus
+  register_type: holding
+  address: 1039
+  bitmask: 1
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  id: Service_ena
+  name: Service interval function
+  icon: mdi:wrench-cog-outline
+  register_type: holding
+  address: 1040
+  bitmask: 1
+
+
+text_sensor:
+
+- platform: modbus_controller
+  modbus_controller_id: ${dantherm_ctrl_id}
+  id: SW_version
+  name: Software version
+  icon: mdi:stairs
+  address: 1032
+  register_count: 3
+  register_type: holding
+  entity_category: diagnostic
+  skip_updates: 20 # No need to waste time asking for this too often
+  lambda: |-
+        const uint8_t *p = &data[item->offset];
+        int build = p[0] << 8 | p[1];
+        int major = p[2] << 8 | p[3];
+        int minor = p[4] << 8 | p[5];
+        return str_sprintf("%d.%d (build %d)", major, minor, build);
