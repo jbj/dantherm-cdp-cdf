@@ -1,9 +1,25 @@
+# Dantherm CDP/CDP-T/CDF 40-50-70 for ESPHome
+# ===========================================
+#
+# This ESPHome configuration file contains the Modbus configuration for
+# controlling a Dantherm dehumidifier in Home Assistant via ESPHome. It works
+# for my CDP 40 unit, and based on Dantherm's documentation I expect it to work
+# for all CDP, CDP-T and CDF units.
+#
+# To use this file, include it via the Remote Packages mechanism and set the
+# following `substitutions` if needed:
+# * `dantherm_uart_id`. Mandatory. Set this to the `id` of a `uart` section that
+#   contains the hardware-specific configuration for the UART on your board
+#   that's connected to the Dantherm's RS-485 port.
+# * `dantherm_address`. Optional. Set this to the address of the Modbus server
+#   you are targeting. The server address can be changed on the front panel.
+
 substitutions:
   dantherm_ctrl_id: dantherm_cdp_modbus_ctrl
-  # Override these with `substitutions` in the caller as necessary
   dantherm_baud_rate: "115200"
-  dantherm_address: "1"
   dantherm_parity: NONE
+  # Override these with `substitutions` in the caller as necessary
+  dantherm_address: "1"
 
 uart:
   id: ${dantherm_uart_id}
@@ -22,8 +38,6 @@ modbus_controller:
   setup_priority: -10
   update_interval: 10s
 
-# Dantherm CDP/CDP-T/CDF 40-50-70
-#
 # The documentation for this Modbus interface can be found on the
 # Dantherm web site in the document titled "Modbus RTU Interface
 # for CDP/ CDP-T/ CDF 40-50-70". URL:
